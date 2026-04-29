@@ -1,0 +1,10 @@
+{
+  "venvPath": "../../entorno/Scripts",
+  "pythonPath": "../../entorno/Scripts/python.exe",
+  "djangoSettingsModule": "src.settings",
+  "typeCheckingMode": "basic",
+  "useLibraryCodeForTypes": true,
+  "reportAttributeAccessIssue": "none",
+  "reportGeneralTypeIssues": "none",
+  "reportOptionalMemberAccess": "none"
+}
