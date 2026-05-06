@@ -3,19 +3,19 @@
 
 from django.db.models import Count, Sum
 from django.db.models.functions import TruncMonth
-from rest_framework.permissions import IsAdminUser
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.models import User
+from accounts.permissions import IsAdminRole
 from orders.models import Order, OrderItem
 
 
 class ClientReportView(APIView):
     """Returns a summary of clients and their order activity."""
 
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminRole]
 
     def get(self, request: Request) -> Response:  # pylint: disable=unused-argument
         """List all clients with their total orders and revenue."""
@@ -43,7 +43,7 @@ class ClientReportView(APIView):
 class SalesReportView(APIView):
     """Returns aggregated sales figures for paid orders."""
 
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminRole]
 
     def get(self, request: Request) -> Response:  # pylint: disable=unused-argument
         """Return total revenue and number of paid orders."""
@@ -59,7 +59,7 @@ class SalesReportView(APIView):
 class DashboardView(APIView):
     """Returns dashboard data: top products and monthly sales."""
 
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminRole]
 
     def get(self, request: Request) -> Response:  # pylint: disable=unused-argument
         """Return top 5 products by units sold and monthly revenue breakdown."""

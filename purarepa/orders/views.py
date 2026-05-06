@@ -5,18 +5,27 @@ import mercadopago
 from django.conf import settings
 from rest_framework import viewsets
 from rest_framework.decorators import api_view, permission_classes, action
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
+from accounts.permissions import IsAdminRole
 from .models import Order, PaymentProof
-from .serializers import OrderCreateSerializer, PaymentProofSerializer, PaymentProofAdminSerializer
+from .serializers import (
+    OrderCreateSerializer, OrderStatusSerializer,
+    PaymentProofSerializer, PaymentProofAdminSerializer,
+)
 
 
 class OrderViewSet(viewsets.ModelViewSet):  # pylint: disable=too-many-ancestors
     """ViewSet for listing, creating and managing orders."""
 
     permission_classes = [IsAuthenticated]
-    serializer_class = OrderCreateSerializer
+
+    def get_serializer_class(self):
+        """Use OrderCreateSerializer for creation, OrderStatusSerializer for updates."""
+        if self.action in ('update', 'partial_update'):
+            return OrderStatusSerializer
+        return OrderCreateSerializer
 
     def get_queryset(self):
         """Return all orders for admins, or only the user's own orders."""
@@ -44,7 +53,7 @@ class ProofAdminViewSet(viewsets.GenericViewSet,
                         viewsets.mixins.UpdateModelMixin):
     """ViewSet for admins to list and verify payment proofs."""
 
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminRole]
     serializer_class = PaymentProofAdminSerializer
     queryset = PaymentProof.objects.all().order_by('-uploaded_at')
 

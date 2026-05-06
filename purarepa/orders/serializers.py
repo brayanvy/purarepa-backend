@@ -29,8 +29,17 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ('id', 'payment_method', 'items', 'order_items', 'total', 'status', 'created_at')
+        fields = ('id', 'payment_method', 'delivery_address', 'items', 'order_items', 'total', 'status', 'created_at')
         read_only_fields = ('id', 'total', 'status', 'created_at', 'order_items')
+
+    def validate(self, attrs):
+        """Reject orders with empty or blank delivery_address."""
+        address = attrs.get('delivery_address', '')
+        if not address or not address.strip():
+            raise serializers.ValidationError(
+                {"delivery_address": "La dirección de entrega es obligatoria."}
+            )
+        return attrs
 
     @transaction.atomic
     def create(self, validated_data):
@@ -68,6 +77,15 @@ class PaymentProofSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentProof
         fields = ('file',)
+
+
+class OrderStatusSerializer(serializers.ModelSerializer):
+    """Serializer for admin status updates on an existing order."""
+
+    class Meta:
+        model = Order
+        fields = ('id', 'status', 'delivery_address', 'total', 'payment_method', 'created_at')
+        read_only_fields = ('id', 'delivery_address', 'total', 'payment_method', 'created_at')
 
 
 class PaymentProofAdminSerializer(serializers.ModelSerializer):
