@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auth — Purarepa API</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌽</text></svg>" />
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="logo">🌽</span>
+      <div>
+        <div class="sidebar-title">Purarepa API</div>
+        <div class="sidebar-version">v1.0 · Django REST Framework</div>
+      </div>
+    </div>
+    <div class="nav-section">Inicio</div>
+    <a href="../index.html" class="nav-link">Introducción</a>
+    <a href="../index.html#arquitectura" class="nav-link">Arquitectura</a>
+    <a href="../index.html#autenticacion" class="nav-link">Autenticación JWT</a>
+    <a href="../index.html#errores" class="nav-link">Códigos de error</a>
+    <a href="../index.html#modelos" class="nav-link">Modelos de datos</a>
+    <div class="nav-section">Endpoints</div>
+    <a href="auth.html" class="nav-link active">🔐 Auth</a>
+    <a href="products.html" class="nav-link">🌽 Products</a>
+    <a href="orders.html" class="nav-link">📦 Orders</a>
+    <a href="reports.html" class="nav-link">📊 Reports</a>
+    <div class="nav-section">Referencia</div>
+    <a href="../schemas.html" class="nav-link">Schemas JSON</a>
+    <a href="../changelog.html" class="nav-link">Changelog</a>
+  </nav>
+
+  <main class="main">
+    <div class="content">
+
+      <div class="page-header">
+        <h1>🔐 Autenticación</h1>
+        <p>Registro de usuarios, obtención y renovación de tokens JWT, y consulta de perfil.</p>
+      </div>
+
+      <!-- Endpoints summary table -->
+      <table class="table">
+        <thead>
+          <tr><th>Método</th><th>Endpoint</th><th>Descripción</th><th>Auth</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="method-badge method-post">POST</span></td>
+            <td><code>/api/auth/register/</code></td>
+            <td>Registrar nuevo usuario</td>
+            <td><span class="badge badge-green">Público</span></td>
+          </tr>
+          <tr>
+            <td><span class="method-badge method-post">POST</span></td>
+            <td><code>/api/auth/token/</code></td>
+            <td>Obtener access + refresh token</td>
+            <td><span class="badge badge-green">Público</span></td>
+          </tr>
+          <tr>
+            <td><span class="method-badge method-post">POST</span></td>
+            <td><code>/api/auth/token/refresh/</code></td>
+            <td>Renovar access token</td>
+            <td><span class="badge badge-green">Público</span></td>
+          </tr>
+          <tr>
+            <td><span class="method-badge method-get">GET</span></td>
+            <td><code>/api/auth/profile/</code></td>
+            <td>Obtener perfil del usuario autenticado</td>
+            <td><span class="badge badge-blue">JWT</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- POST /register -->
+      <div class="endpoint-card">
+        <div class="endpoint-header">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/auth/register/</span>
+          <span class="endpoint-summary">Registrar nuevo usuario</span>
+          <span class="badge badge-green endpoint-auth">Público</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Crea una nueva cuenta de usuario con rol <code>CLIENT</code>.</p>
+
+          <h3>Request body</h3>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">json</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+            </div>
+            <pre><code>{
+  <span class="key">"username"</span>: <span class="string">"maria_garcia"</span>,
+  <span class="key">"email"</span>:    <span class="string">"maria@ejemplo.com"</span>,
+  <span class="key">"password"</span>: <span class="string">"MiPassword123!"</span>,
+  <span class="key">"phone"</span>:    <span class="string">"3101234567"</span>
+}</code></pre>
+          </div>
+
+          <table class="table">
+            <thead><tr><th>Campo</th><th>Tipo</th><th>Requerido</th><th>Descripción</th></tr></thead>
+            <tbody>
+              <tr><td><code>username</code></td><td>string</td><td>✅</td><td>Único, sin espacios</td></tr>
+              <tr><td><code>email</code></td><td>string</td><td>✅</td><td>Formato válido de email</td></tr>
+              <tr><td><code>password</code></td><td>string</td><td>✅</td><td>Mínimo 8 caracteres, validado por Django</td></tr>
+              <tr><td><code>phone</code></td><td>string</td><td>❌</td><td>Teléfono de contacto</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Respuestas</h3>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">json — 201 Created</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+            </div>
+            <pre><code>{
+  <span class="key">"message"</span>: <span class="string">"Usuario creado correctamente."</span>
+}</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">json — 400 Bad Request</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+            </div>
+            <pre><code>{
+  <span class="key">"username"</span>: [<span class="string">"Ya existe un usuario con ese nombre."</span>],
+  <span class="key">"password"</span>: [<span class="string">"Esta contraseña es demasiado común."</span>]
+}</code></pre>
+          </div>
+
+          <h3>Ejemplo cURL</h3>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+            </div>
+            <pre><code>curl -X POST https://purarepa-api.onrender.com/api/auth/register/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "maria_garcia",
+    "email": "maria@ejemplo.com",
+    "password": "MiPassword123!",
+    "phone": "3101234567"
+  }'</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- POST /token -->
+      <div class="endpoint-card">
+        <div class="endpoint-header">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/auth/token/</span>
+          <span class="endpoint-summary">Obtener tokens JWT</span>
+          <span class="badge badge-green endpoint-auth">Público</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Autentica al usuario y devuelve un par de tokens JWT. El <code>access</code> token expira en <strong>24 horas</strong>; el <code>refresh</code> en <strong>7 días</strong>.</p>
+
+          <h3>Request body</h3>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">json</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+            </div>
+            <pre><code>{
+  <span class="key">"username"</span>: <span class="string">"maria_garcia"</span>,
+  <span class="key">"password"</span>: <span class="string">"MiPassword123!"</span>
+}</code></pre>
+          </div>
+
+          <h3>Respuestas</h3>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">json — 200 OK</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+            </div>
+            <pre><code>{
+  <span class="key">"access"</span>:  <span class="string">"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE3..."</span>,
+  <span class="key">"refresh"</span>: <span class="string">"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE3..."</span>
+}</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">json — 401 Unauthorized</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+            </div>
+            <pre><code>{
+  <span class="key">"detail"</span>: <span class="string">"No active account found with the given credentials"</span>
+}</code></pre>
+          </div>
+
+          <div class="alert alert-info">
+            💡 Guarda el <code>access</code> token en memoria segura (no en localStorage). En Flutter usa <code>flutter_secure_storage</code>.
+          </div>
+        </div>
+      </div>
+
+      <!-- POST /token/refresh -->
+      <div class="endpoint-card">
+        <div class="endpoint-header">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/auth/token/refresh/</span>
+          <span class="endpoint-summary">Renovar access token</span>
+          <span class="badge badge-green endpoint-auth">Público</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Genera un nuevo <code>access</code> token usando el <code>refresh</code> token. Úsalo cuando recibas un <code>401</code> en cualquier endpoint protegido.</p>
+
+          <h3>Request body</h3>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">json</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+            </div>
+            <pre><code>{
+  <span class="key">"refresh"</span>: <span class="string">"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."</span>
+}</code></pre>
+          </div>
+
+          <h3>Respuesta — 200 OK</h3>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">json</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+            </div>
+            <pre><code>{
+  <span class="key">"access"</span>: <span class="string">"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE3..."</span>
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- GET /profile -->
+      <div class="endpoint-card">
+        <div class="endpoint-header">
+          <span class="method-badge method-get">GET</span>
+          <span class="endpoint-path">/api/auth/profile/</span>
+          <span class="endpoint-summary">Perfil del usuario autenticado</span>
+          <span class="badge badge-blue endpoint-auth">JWT</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Devuelve los datos del usuario asociado al token JWT enviado en el header.</p>
+
+          <h3>Respuesta — 200 OK</h3>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">json</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+            </div>
+            <pre><code>{
+  <span class="key">"id"</span>:       <span class="number">1</span>,
+  <span class="key">"username"</span>: <span class="string">"maria_garcia"</span>,
+  <span class="key">"email"</span>:    <span class="string">"maria@ejemplo.com"</span>,
+  <span class="key">"phone"</span>:    <span class="string">"3101234567"</span>,
+  <span class="key">"role"</span>:     <span class="string">"CLIENT"</span>
+}</code></pre>
+          </div>
+
+          <h3>Ejemplo cURL</h3>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+            </div>
+            <pre><code>curl https://purarepa-api.onrender.com/api/auth/profile/ \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."</code></pre>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="../assets/script.js"></script>
+</body>
+</html>

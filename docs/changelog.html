@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Changelog — Purarepa API</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌽</text></svg>" />
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="logo">🌽</span>
+      <div>
+        <div class="sidebar-title">Purarepa API</div>
+        <div class="sidebar-version">v1.0 · Django REST Framework</div>
+      </div>
+    </div>
+    <div class="nav-section">Inicio</div>
+    <a href="index.html" class="nav-link">Introducción</a>
+    <a href="index.html#arquitectura" class="nav-link">Arquitectura</a>
+    <a href="index.html#autenticacion" class="nav-link">Autenticación JWT</a>
+    <a href="index.html#errores" class="nav-link">Códigos de error</a>
+    <a href="index.html#modelos" class="nav-link">Modelos de datos</a>
+    <div class="nav-section">Endpoints</div>
+    <a href="endpoints/auth.html" class="nav-link">🔐 Auth</a>
+    <a href="endpoints/products.html" class="nav-link">🌽 Products</a>
+    <a href="endpoints/orders.html" class="nav-link">📦 Orders</a>
+    <a href="endpoints/reports.html" class="nav-link">📊 Reports</a>
+    <div class="nav-section">Referencia</div>
+    <a href="schemas.html" class="nav-link">Schemas JSON</a>
+    <a href="changelog.html" class="nav-link active">Changelog</a>
+  </nav>
+
+  <main class="main">
+    <div class="content">
+
+      <div class="page-header">
+        <h1>Changelog</h1>
+        <p>Historial de cambios de la API de Purarepa.</p>
+      </div>
+
+      <!-- v1.0 -->
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px;">
+        <span class="badge badge-green" style="font-size:13px;padding:4px 12px;">v1.0.0</span>
+        <span style="color:var(--text-muted);font-size:14px;">19 de mayo de 2025 — Lanzamiento inicial</span>
+      </div>
+
+      <div style="border-left:3px solid var(--brand-light);padding-left:20px;margin-bottom:40px;">
+
+        <h3>✨ Nuevas funcionalidades</h3>
+        <ul style="padding-left:20px;margin-bottom:16px;line-height:2;">
+          <li>Autenticación JWT con <code>djangorestframework-simplejwt</code> — access token 24h, refresh 7 días</li>
+          <li>Registro de usuarios con validación de contraseña por Django</li>
+          <li>Catálogo público de productos — <code>GET /api/products/</code> sin token</li>
+          <li>CRUD completo de productos para administradores</li>
+          <li>Creación de órdenes con decremento atómico de stock (<code>select_for_update</code>)</li>
+          <li>Campo <code>delivery_address</code> obligatorio en órdenes (pago contra entrega)</li>
+          <li>Subida de comprobantes de pago para órdenes MANUAL</li>
+          <li>Panel de administración de comprobantes con aprobación/rechazo</li>
+          <li>Reportes de ventas, clientes y dashboard con top productos</li>
+          <li>Integración con MercadoPago (webhook + preferencia de pago)</li>
+          <li>Soporte CORS configurable por variable de entorno</li>
+          <li>Archivos estáticos servidos con WhiteNoise</li>
+        </ul>
+
+        <h3>🔒 Seguridad</h3>
+        <ul style="padding-left:20px;margin-bottom:16px;line-height:2;">
+          <li>Permiso personalizado <code>IsAdminRole</code> — verifica <code>role=ADMIN</code> o <code>is_staff=True</code></li>
+          <li>Validación de <code>delivery_address</code> en serializer — rechaza cadenas vacías y solo espacios</li>
+          <li>Transacciones atómicas en creación de órdenes — rollback completo si hay stock insuficiente</li>
+          <li>Precios unitarios capturados al momento de la compra — inmunes a cambios posteriores</li>
+        </ul>
+
+        <h3>🧪 Pruebas</h3>
+        <ul style="padding-left:20px;margin-bottom:16px;line-height:2;">
+          <li>6 propiedades de corrección verificadas con Hypothesis (property-based testing)</li>
+          <li>Pruebas unitarias de integración para todos los endpoints críticos</li>
+          <li>Cobertura de casos: stock insuficiente, dirección vacía, acceso público, preservación de precios</li>
+        </ul>
+      </div>
+
+      <div style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:20px 24px;">
+        <h3 style="margin-top:0;">🗺️ Próximas versiones (roadmap)</h3>
+        <ul style="padding-left:20px;line-height:2;color:var(--text-muted);">
+          <li><strong>v1.1</strong> — Migración a PostgreSQL en producción (Neon), eliminación de SQLite</li>
+          <li><strong>v1.1</strong> — Almacenamiento de media en Cloudinary</li>
+          <li><strong>v1.2</strong> — Rate limiting en endpoints de autenticación</li>
+          <li><strong>v1.2</strong> — Endpoint <code>GET /api/health/</code> para health checks</li>
+          <li><strong>v1.3</strong> — Filtros y búsqueda en catálogo (<code>?search=</code>, <code>?type=</code>)</li>
+          <li><strong>v2.0</strong> — Notificaciones por email al crear/actualizar órdenes</li>
+        </ul>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="assets/script.js"></script>
+</body>
+</html>

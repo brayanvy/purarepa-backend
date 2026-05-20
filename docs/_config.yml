@@ -1,0 +1,6 @@
+# GitHub Pages configuration
+# This site uses plain HTML/CSS/JS — no Jekyll theme needed.
+# The empty _config.yml tells GitHub Pages to serve the files as-is.
+
+title: Purarepa API Documentation
+description: REST API para la tienda de arepas artesanales colombianas

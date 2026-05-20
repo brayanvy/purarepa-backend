@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orders — Purarepa API</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌽</text></svg>" />
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="logo">🌽</span>
+      <div>
+        <div class="sidebar-title">Purarepa API</div>
+        <div class="sidebar-version">v1.0 · Django REST Framework</div>
+      </div>
+    </div>
+    <div class="nav-section">Inicio</div>
+    <a href="../index.html" class="nav-link">Introducción</a>
+    <a href="../index.html#arquitectura" class="nav-link">Arquitectura</a>
+    <a href="../index.html#autenticacion" class="nav-link">Autenticación JWT</a>
+    <a href="../index.html#errores" class="nav-link">Códigos de error</a>
+    <a href="../index.html#modelos" class="nav-link">Modelos de datos</a>
+    <div class="nav-section">Endpoints</div>
+    <a href="auth.html" class="nav-link">🔐 Auth</a>
+    <a href="products.html" class="nav-link">🌽 Products</a>
+    <a href="orders.html" class="nav-link active">📦 Orders</a>
+    <a href="reports.html" class="nav-link">📊 Reports</a>
+    <div class="nav-section">Referencia</div>
+    <a href="../schemas.html" class="nav-link">Schemas JSON</a>
+    <a href="../changelog.html" class="nav-link">Changelog</a>
+  </nav>
+
+  <main class="main">
+    <div class="content">
+
+      <div class="page-header">
+        <h1>📦 Órdenes</h1>
+        <p>Creación y gestión de pedidos con pago contra entrega. Decremento atómico de stock garantizado.</p>
+      </div>
+
+      <div class="alert alert-warning">
+        🔒 <strong>Todos los endpoints de órdenes requieren JWT.</strong> Los clientes solo ven sus propias órdenes; los administradores ven todas.
+      </div>
+
+      <table class="table">
+        <thead>
+          <tr><th>Método</th><th>Endpoint</th><th>Descripción</th><th>Auth</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="method-badge method-get">GET</span></td>
+            <td><code>/api/orders/</code></td>
+            <td>Listar órdenes del usuario (o todas si ADMIN)</td>
+            <td><span class="badge badge-blue">JWT</span></td>
+          </tr>
+          <tr>
+            <td><span class="method-badge method-post">POST</span></td>
+            <td><code>/api/orders/</code></td>
+            <td>Crear nueva orden</td>
+            <td><span class="badge badge-blue">JWT</span></td>
+          </tr>
+          <tr>
+            <td><span class="method-badge method-get">GET</span></td>
+            <td><code>/api/orders/{id}/</code></td>
+            <td>Detalle de una orden</td>
+            <td><span class="badge badge-blue">JWT</span></td>
+          </tr>
+          <tr>
+            <td><span class="method-badge method-patch">PATCH</span></td>
+            <td><code>/api/orders/{id}/</code></td>
+            <td>Actualizar estado de la orden</td>
+            <td><span class="badge badge-orange">ADMIN</span></td>
+          </tr>
+          <tr>
+            <td><span class="method-badge method-post">POST</span></td>
+            <td><code>/api/orders/{id}/upload_proof/</code></td>
+            <td>Subir comprobante de pago</td>
+            <td><span class="badge badge-blue">JWT</span></td>
+          </tr>
+          <tr>
+            <td><span class="method-badge method-get">GET</span></td>
+            <td><code>/api/orders/admin/proofs/</code></td>
+            <td>Listar comprobantes pendientes</td>
+            <td><span class="badge badge-orange">ADMIN</span></td>
+          </tr>
+          <tr>
+            <td><span class="method-badge method-patch">PATCH</span></td>
+            <td><code>/api/orders/admin/proofs/{id}/verify/</code></td>
+            <td>Aprobar o rechazar comprobante</td>
+            <td><span class="badge badge-orange">ADMIN</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- POST /orders/ -->
+      <div class="endpoint-card">
+        <div class="endpoint-header">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/orders/</span>
+          <span class="endpoint-summary">Crear orden</span>
+          <span class="badge badge-blue endpoint-auth">JWT</span>
+        </div>
+        <div class="endpoint-body">
+          <p>
+            Crea una nueva orden con los ítems del carrito. El proceso es <strong>atómico</strong>:
+            si algún producto no tiene stock suficiente, toda la operación se revierte y no se
+            modifica ningún stock.
+          </p>
+
+          <div class="alert alert-info">
+            💡 El campo <code>total</code> es calculado automáticamente por el servidor usando el precio vigente de cada producto al momento de la compra. No se puede enviar desde el cliente.
+          </div>
+
+          <h3>Request body</h3>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">json</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+            </div>
+            <pre><code>{
+  <span class="key">"payment_method"</span>:   <span class="string">"MANUAL"</span>,
+  <span class="key">"delivery_address"</span>: <span class="string">"Calle 45 # 12-30, Barrio Chapinero, Bogotá"</span>,
+  <span class="key">"items"</span>: [
+    { <span class="key">"product_id"</span>: <span class="number">1</span>, <span class="key">"quantity"</span>: <span class="number">2</span> },
+    { <span class="key">"product_id"</span>: <span class="number">3</span>, <span class="key">"quantity"</span>: <span class="number">1</span> }
+  ]
+}</code></pre>
+          </div>
+
+          <table class="table">
+            <thead><tr><th>Campo</th><th>Tipo</th><th>Requerido</th><th>Descripción</th></tr></thead>
+            <tbody>
+              <tr><td><code>payment_method</code></td><td>enum</td><td>✅</td><td><code>MANUAL</code> (contra entrega) | <code>GATEWAY</code> (MercadoPago)</td></tr>
+              <tr><td><code>delivery_address</code></td><td>string</td><td>✅</td><td>Dirección completa de entrega. No puede estar vacía.</td></tr>
+              <tr><td><code>items</code></td><td>array</td><td>✅</td><td>Lista de ítems. Mínimo 1 ítem.</td></tr>
+              <tr><td><code>items[].product_id</code></td><td>integer</td><td>✅</td><td>ID del producto</td></tr>
+              <tr><td><code>items[].quantity</code></td><td>integer</td><td>✅</td><td>Cantidad solicitada (≥ 1)</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Respuesta — 201 Created</h3>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">json</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+            </div>
+            <pre><code>{
+  <span class="key">"id"</span>:               <span class="number">42</span>,
+  <span class="key">"payment_method"</span>:   <span class="string">"MANUAL"</span>,
+  <span class="key">"delivery_address"</span>: <span class="string">"Calle 45 # 12-30, Barrio Chapinero, Bogotá"</span>,
+  <span class="key">"total"</span>:            <span class="string">"13500.00"</span>,
+  <span class="key">"status"</span>:           <span class="string">"PENDING"</span>,
+  <span class="key">"created_at"</span>:       <span class="string">"2025-05-19T14:30:00Z"</span>,
+  <span class="key">"order_items"</span>: [
+    {
+      <span class="key">"id"</span>:           <span class="number">101</span>,
+      <span class="key">"product"</span>:      <span class="number">1</span>,
+      <span class="key">"product_name"</span>: <span class="string">"Arepa de Choclo"</span>,
+      <span class="key">"quantity"</span>:     <span class="number">2</span>,
+      <span class="key">"unit_price"</span>:   <span class="string">"4500.00"</span>
+    },
+    {
+      <span class="key">"id"</span>:           <span class="number">102</span>,
+      <span class="key">"product"</span>:      <span class="number">3</span>,
+      <span class="key">"product_name"</span>: <span class="string">"Arepa Rellena"</span>,
+      <span class="key">"quantity"</span>:     <span class="number">1</span>,
+      <span class="key">"unit_price"</span>:   <span class="string">"4500.00"</span>
+    }
+  ]
+}</code></pre>
+          </div>
+
+          <h3>Errores posibles</h3>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">json — 400 dirección vacía</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+            </div>
+            <pre><code>{
+  <span class="key">"delivery_address"</span>: [<span class="string">"La dirección de entrega es obligatoria."</span>]
+}</code></pre>
+          </div>
+
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">json — 400 stock insuficiente</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+            </div>
+            <pre><code>[<span class="string">"Stock insuficiente: Arepa de Choclo"</span>]</code></pre>
+          </div>
+
+          <h3>Ejemplo cURL</h3>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+            </div>
+            <pre><code>curl -X POST https://purarepa-api.onrender.com/api/orders/ \
+  -H "Authorization: Bearer &lt;access_token&gt;" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "payment_method": "MANUAL",
+    "delivery_address": "Calle 45 # 12-30, Chapinero, Bogotá",
+    "items": [
+      {"product_id": 1, "quantity": 2},
+      {"product_id": 3, "quantity": 1}
+    ]
+  }'</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- PATCH /orders/{id}/ -->
+      <div class="endpoint-card">
+        <div class="endpoint-header">
+          <span class="method-badge method-patch">PATCH</span>
+          <span class="endpoint-path">/api/orders/{id}/</span>
+          <span class="endpoint-summary">Actualizar estado de la orden</span>
+          <span class="badge badge-orange endpoint-auth">ADMIN</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Permite al administrador cambiar el estado de una orden.</p>
+
+          <h3>Estados válidos</h3>
+          <table class="table">
+            <thead><tr><th>Estado</th><th>Descripción</th></tr></thead>
+            <tbody>
+              <tr><td><code>PENDING</code></td><td>Pedido recibido, pendiente de confirmación</td></tr>
+              <tr><td><code>PAID</code></td><td>Pago confirmado</td></tr>
+              <tr><td><code>SHIPPED</code></td><td>Pedido en camino</td></tr>
+              <tr><td><code>CANCELLED</code></td><td>Pedido cancelado</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Ejemplo</h3>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+            </div>
+            <pre><code>curl -X PATCH https://purarepa-api.onrender.com/api/orders/42/ \
+  -H "Authorization: Bearer &lt;admin_token&gt;" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "SHIPPED"}'</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- POST /orders/{id}/upload_proof/ -->
+      <div class="endpoint-card">
+        <div class="endpoint-header">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/orders/{id}/upload_proof/</span>
+          <span class="endpoint-summary">Subir comprobante de pago</span>
+          <span class="badge badge-blue endpoint-auth">JWT</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Permite al cliente subir un comprobante de pago para órdenes con <code>payment_method=MANUAL</code>. Solo se puede subir un comprobante por orden.</p>
+
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+            </div>
+            <pre><code>curl -X POST https://purarepa-api.onrender.com/api/orders/42/upload_proof/ \
+  -H "Authorization: Bearer &lt;access_token&gt;" \
+  -F "file=@/ruta/comprobante.jpg"</code></pre>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="../assets/script.js"></script>
+</body>
+</html>
