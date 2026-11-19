@@ -23,6 +23,7 @@ class Order(models.Model):
     status = models.CharField(max_length=20, choices=STATUS, default='PENDING')
     payment_method = models.CharField(max_length=10, choices=PAYMENT)
     delivery_address = models.TextField(blank=True, default='')
+    observacion = models.TextField(blank=True, default='')
     mp_preference_id = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -44,6 +45,7 @@ class OrderItem(models.Model):
     product = models.ForeignKey('products.Product', on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField()
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    salt_preference = models.CharField(max_length=50, blank=True, default='')
 
     class Meta:
         """Meta options for OrderItem."""

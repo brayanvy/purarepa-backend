@@ -18,7 +18,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ('id', 'product', 'product_name', 'quantity', 'unit_price')
+        fields = ('id', 'product', 'product_name', 'quantity', 'unit_price', 'salt_preference')
 
 
 class OrderCreateSerializer(serializers.ModelSerializer):
@@ -29,7 +29,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ('id', 'payment_method', 'delivery_address', 'items', 'order_items', 'total', 'status', 'created_at')
+        fields = ('id', 'payment_method', 'delivery_address', 'observacion', 'items', 'order_items', 'total', 'status', 'created_at')
         read_only_fields = ('id', 'total', 'status', 'created_at', 'order_items')
 
     def validate(self, attrs):
@@ -64,6 +64,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
                 product=prod,
                 quantity=item['quantity'],
                 unit_price=prod.price,
+                salt_preference=item.get('notes', ''),
             )
             total += prod.price * item['quantity']
         order.total = total
@@ -84,8 +85,8 @@ class OrderStatusSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ('id', 'status', 'delivery_address', 'total', 'payment_method', 'created_at')
-        read_only_fields = ('id', 'delivery_address', 'total', 'payment_method', 'created_at')
+        fields = ('id', 'status', 'delivery_address', 'observacion', 'total', 'payment_method', 'created_at')
+        read_only_fields = ('id', 'delivery_address', 'observacion', 'total', 'payment_method', 'created_at')
 
 
 class PaymentProofAdminSerializer(serializers.ModelSerializer):

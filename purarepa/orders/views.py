@@ -33,6 +33,26 @@ class OrderViewSet(viewsets.ModelViewSet):  # pylint: disable=too-many-ancestors
             return Order.objects.filter(user=self.request.user)
         return Order.objects.all()
 
+    @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated], url_path='status')
+    def order_status(self, request, pk=None):
+        """Return a lightweight status summary of the order for the customer."""
+        order = self.get_object()   # enforces ownership via get_queryset
+        STATUS_LABELS = {
+            'PENDING':   'Pedido Recibido (Estamos preparando tus arepas)',
+            'PAID':      'Pago Confirmado (Tu pedido está en cola de producción)',
+            'SHIPPED':   'Pedido Enviado (¡Va en camino a tu dirección!)',
+            'CANCELLED': 'Pedido Cancelado',
+        }
+        return Response({
+            'id': order.id,
+            'status': order.status,
+            'status_label': STATUS_LABELS.get(order.status, order.status),
+            'total': str(order.total),
+            'delivery_address': order.delivery_address,
+            'observacion': order.observacion,
+            'created_at': order.created_at.strftime('%d/%m/%Y %H:%M'),
+        })
+
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def upload_proof(self, request, pk=None):  # pylint: disable=unused-argument
         """Upload a payment proof for a manual-payment order."""
